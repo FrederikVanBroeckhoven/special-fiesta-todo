@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,24 +41,16 @@ public class ItemRestController {
 	}
 
 	@PostMapping(path = "/add")
-	public ResponseEntity<HttpStatus> add(@RequestParam String title, @RequestParam String description) {
-		Item item = new Item();
-		item.setTitle(title);
-		item.setDescription(description);
+	public ResponseEntity<HttpStatus> add(@RequestBody Item item) {
 		itemRepository.save(item);
 		return ResponseEntity.created(URI.create("/get/" + item.getId())).build();
 	}
 
-	@PutMapping(path = "/set/{id}")
-	public ResponseEntity<HttpStatus> set(@PathVariable("id") Integer id, @RequestParam String title,
-			@RequestParam String description) {
-		Optional<Item> itemOpt = itemRepository.findById(id);
-		if (!itemOpt.isPresent()) {
+	@PutMapping(path = "/set")
+	public ResponseEntity<HttpStatus> set(@RequestBody Item item) {
+		if (!itemRepository.existsById(item.getId())) {
 			return ResponseEntity.notFound().build();
 		}
-		Item item = itemOpt.get();
-		item.setTitle(title);
-		item.setDescription(description);
 		itemRepository.save(item);
 		return ResponseEntity.ok(HttpStatus.OK);
 	}

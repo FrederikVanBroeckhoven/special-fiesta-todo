@@ -1,0 +1,35 @@
+<!doctype html>
+<html ng-app="item">
+	<head>
+		<meta name="csrf_token" th:content="${_csrf.token}" />
+		<meta name="csrf_parameter" th:content="${_csrf.headerName}" />
+		<title>Demo items</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+    	<script th:src="@{js/item.js}"></script>
+	</head>
+
+	<body>
+		<div ng-controller="all">
+			<div>
+			  <div ng-repeat="it in items">
+				<span ng-controller="set">
+					<button ng-click="set()">SET</button>
+					<input type="text" ng-model="it.title">
+					<input type="text" ng-model="it.description">
+					<input type="hidden" ng-model="it.checked">
+				</span>
+				<span style="width:50px">{{ it.checked }}</span>
+				<span style="width:50px" ng-controller="del">
+					<button ng-click="del()">DEL</button>
+				</span>
+			  </div>
+			</div>
+		</div>
+		<br/>
+		<div ng-controller="add">
+		    <button ng-click="add()">ADD</button>
+		    <input type="text" ng-model="item.title">
+		    <input type="text" ng-model="item.description">
+		</div>
+	</body>
+</html>
