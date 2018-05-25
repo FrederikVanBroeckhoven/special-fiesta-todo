@@ -1,5 +1,6 @@
 package com.did.todo.controller;
 
+import java.net.URI;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class ItemRestController {
 		item.setTitle(title);
 		item.setDescription(description);
 		itemRepository.save(item);
-		return ResponseEntity.ok(HttpStatus.OK);
+		return ResponseEntity.created(URI.create("/get/" + item.getId())).build();
 	}
 
 	@PutMapping(path = "/set/{id}")
@@ -52,7 +53,7 @@ public class ItemRestController {
 			@RequestParam String description) {
 		Optional<Item> itemOpt = itemRepository.findById(id);
 		if (!itemOpt.isPresent()) {
-			return new ResponseEntity<HttpStatus>(HttpStatus.NOT_FOUND);
+			return ResponseEntity.notFound().build();
 		}
 		Item item = itemOpt.get();
 		item.setTitle(title);
@@ -65,7 +66,7 @@ public class ItemRestController {
 	public ResponseEntity<HttpStatus> check(@PathVariable("id") Integer id, @RequestParam Boolean onf) {
 		Optional<Item> itemOpt = itemRepository.findById(id);
 		if (!itemOpt.isPresent()) {
-			return new ResponseEntity<HttpStatus>(HttpStatus.NOT_FOUND);
+			return ResponseEntity.notFound().build();
 		}
 		Item item = itemOpt.get();
 		item.setChecked(onf);
