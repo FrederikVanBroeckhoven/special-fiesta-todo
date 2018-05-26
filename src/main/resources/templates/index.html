@@ -11,18 +11,22 @@
 	<body>
 		<div ng-controller="all">
 			<div>
-			  <div ng-repeat="it in items">
+			  <div ng-repeat="it in item_list.content">
 				<span ng-controller="set">
 					<button ng-click="set()">SET</button>
 					<input type="text" ng-model="it.title">
 					<input type="text" ng-model="it.description">
-					<input type="hidden" ng-model="it.checked">
 				</span>
-				<span style="width:50px">{{ it.checked }}</span>
+				<span ng-controller="check">
+					<input type="checkbox" ng-click="check()" ng-model="it.checked">
+				</span>
 				<span style="width:50px" ng-controller="del">
 					<button ng-click="del()">DEL</button>
 				</span>
 			  </div>
+			</div>
+			<div>
+				<button ng-disabled="item_list.next_page < 0" ng-click="load()">MORE</button>
 			</div>
 		</div>
 		<br/>

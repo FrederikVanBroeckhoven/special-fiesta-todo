@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,9 +35,18 @@ public class ItemRestController {
 		return new ResponseEntity<Item>(item.get(), HttpStatus.OK);
 	}
 
+	private Iterable<Item> getAll(int page) {
+		return itemRepository.findAll(PageRequest.of(page, 2));		
+	}
+	
 	@GetMapping("get/all")
 	public @ResponseBody Iterable<Item> all() {
-		return itemRepository.findAll();
+		return getAll(0);
+	}
+
+	@GetMapping("get/all/{page}")
+	public @ResponseBody Iterable<Item> all(@PathVariable("page") Integer page) {
+		return getAll(page);
 	}
 
 	@PostMapping(path = "/add")
@@ -56,7 +65,7 @@ public class ItemRestController {
 	}
 
 	@PatchMapping(path = "/check/{id}")
-	public ResponseEntity<HttpStatus> check(@PathVariable("id") Integer id, @RequestParam Boolean onf) {
+	public ResponseEntity<HttpStatus> check(@PathVariable("id") Integer id, @RequestBody Boolean onf) {
 		Optional<Item> itemOpt = itemRepository.findById(id);
 		if (!itemOpt.isPresent()) {
 			return ResponseEntity.notFound().build();

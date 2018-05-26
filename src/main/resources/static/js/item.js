@@ -9,12 +9,26 @@ var csrf = function() {
 }
 
 app.controller('all', function($scope, $http) {
-	$http.get('http://localhost:8080/get/all').
+	$scope.item_list = {
+			content: [],
+			next_page: 0
+	}
+	$scope.load = function() {
+		if($scope.item_list.next_page < 0) {
+			return;
+		}
+		$http.get('http://localhost:8080/get/all/' + $scope.item_list.next_page).
 		then(
 			function(response) {
-				$scope.items = response.data;
+				$scope.item_list.content = $scope.item_list.content.concat(response.data.content);
+				$scope.item_list.next_page =
+					response.data.last
+					? -1
+					: $scope.item_list.next_page + 1;
 			}
-		);
+		);		
+	}
+	$scope.load();
 });
 
 app.controller('add', function($scope, $http) {
@@ -32,15 +46,21 @@ app.controller('add', function($scope, $http) {
 	};
 });
 
-app.controller('del', function($scope, $http) {
+app.controller('del', function($scope, $http, $window, $q) {
 	$scope.del = function() {
-		$http.delete('http://localhost:8080/del/' + $scope.$parent.it.id, {
-				headers: csrf()
-		} ).
-			success(
-				function(response) {
+		$q.when($window.confirm('Are you sure ?'))
+			.then((confirm) => {
+				if(confirm) {
+					$http.delete('http://localhost:8080/del/' + $scope.$parent.it.id, {
+						headers: csrf()
+					} ).
+						success(
+								function(response) {
+								}
+						);
 				}
-			);
+        });
+		
 	};
 });
 
@@ -52,6 +72,19 @@ app.controller('set', function($scope, $http) {
 				description: $scope.it.description,
 			}
 		$http.put('http://localhost:8080/set/', data, {
+				headers: csrf()
+		} ).
+			success(
+				function(response) {
+				}
+			);
+	};
+});
+
+app.controller('check', function($scope, $http) {
+	$scope.check = function() {
+		var data = $scope.it.checked;
+		$http.patch('http://localhost:8080/check/' + $scope.$parent.it.id, data, {
 				headers: csrf()
 		} ).
 			success(
