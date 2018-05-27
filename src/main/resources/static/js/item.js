@@ -8,88 +8,122 @@ var csrf = function() {
 	return header;
 }
 
-app.controller('all', function($scope, $http) {
-	$scope.item_list = {
+var root = 'http://localhost:8080';
+
+app.controller('list', function($scope, $http) {
+	$scope.itemList = {
 			content: [],
 			next_page: 0
 	}
 	$scope.load = function() {
-		if($scope.item_list.next_page < 0) {
+		if($scope.itemList.next_page < 0) {
 			return;
 		}
-		$http.get('http://localhost:8080/get/all/' + $scope.item_list.next_page).
-		then(
-			function(response) {
-				$scope.item_list.content = $scope.item_list.content.concat(response.data.content);
-				$scope.item_list.next_page =
-					response.data.last
-					? -1
-					: $scope.item_list.next_page + 1;
-			}
-		);		
+		$http
+			.get(root + '/get/all/' + $scope.itemList.next_page + '/5')
+			.success(
+				(response) => {
+					$scope.itemList.content = $scope.itemList.content.concat(response.content);
+					$scope.itemList.next_page =
+						response.last
+						? -1
+						: $scope.itemList.next_page + 1;
+				}
+			);		
 	}
+	$scope.add = function() {
+		$http
+			.post(
+				root + '/add',
+				{ title: $scope.newItem.title, description: $scope.newItem.description },
+				{ headers: csrf() }
+			)
+			.success(
+				(data, status, headers, config) => {
+					$http
+						.get(root + headers('Location'))
+						.success(
+							function(response) {
+								 $scope.itemList.content.pop();
+								 $scope.itemList.content.unshift(response);
+							}
+						)
+				}
+			)
+			.finally(
+				() => {
+					$scope.newItem.title = '';
+					$scope.newItem.description = '';					
+				}
+			);
+	};
 	$scope.load();
 });
 
-app.controller('add', function($scope, $http) {
-	$scope.add = function() {
-		var data = {
-			title: $scope.item.title,
-			description: $scope.item.description,
-		}
-		$http.post('http://localhost:8080/add', data, {
-				headers: csrf()
-		} ).success(
-				function(response) {
-				}
-			);
-	};
-});
-
-app.controller('del', function($scope, $http, $window, $q) {
+app.controller('item', function($scope, $http, $window, $q) {
+	$scope.editable = false;
+	$scope.setItem = { title: '', description: '' };
 	$scope.del = function() {
-		$q.when($window.confirm('Are you sure ?'))
-			.then((confirm) => {
-				if(confirm) {
-					$http.delete('http://localhost:8080/del/' + $scope.$parent.it.id, {
-						headers: csrf()
-					} ).
-						success(
-								function(response) {
+		$q
+			.when($window.confirm('Are you sure ?'))
+			.then(
+				(confirm) => {
+					if(confirm) {
+						$http
+							.delete(
+								root + '/del/' + $scope.it.id,
+								{ headers: csrf() }
+							)
+							.success(
+								(response) => {
+									$http
+									.get(root + '/get/all/' + $scope.$parent.$parent.itemList.content.length + '/1')
+									.success(
+										function(response) {
+											// surely better done with scope-events,
+											// but this is faster/lighter :)
+											$scope.$parent.$parent.itemList.content.splice($scope.$parent.$index, 1);
+											if(response.content.length > 0) {
+												$scope.$parent.$parent.itemList.content.push(response.content[0]);
+											}
+										}
+									)
 								}
-						);
-				}
-        });
-		
-	};
-});
-
-app.controller('set', function($scope, $http) {
-	$scope.set = function() {
-		var data = {
-				id: $scope.$parent.it.id,
-				title: $scope.it.title,
-				description: $scope.it.description,
-			}
-		$http.put('http://localhost:8080/set/', data, {
-				headers: csrf()
-		} ).
-			success(
-				function(response) {
+							);
+					}
 				}
 			);
 	};
-});
-
-app.controller('check', function($scope, $http) {
-	$scope.check = function() {
-		var data = $scope.it.checked;
-		$http.patch('http://localhost:8080/check/' + $scope.$parent.it.id, data, {
-				headers: csrf()
-		} ).
-			success(
-				function(response) {
+	$scope.set = function() {
+		$http
+			.put(
+				root + '/set/',
+				{
+					id: $scope.$parent.it.id,
+					title: $scope.setItem.title,
+					description: $scope.setItem.description					
+				},
+				{ headers: csrf() }
+			)
+			.finally(
+				() => {
+					$scope.it.title = $scope.setItem.title;
+					$scope.it.description = $scope.setItem.description;
+					$scope.editable = false;
 				}
+			);
+	};
+	$scope.edit = function() {
+		$scope.setItem.title = $scope.it.title;
+		$scope.setItem.description = $scope.it.description;
+		$scope.editable = true;
+	};
+	$scope.check = function() {
+		$http
+			.patch(
+				root + '/check/' + $scope.$parent.it.id,
+				$scope.it.checked,
+				{ headers: csrf() }
 			);
 	};
 });
