@@ -21,8 +21,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		http.httpBasic().disable();
+
 		http //
 				.authorizeRequests() //
+				.antMatchers("/css/**").permitAll() //
+				/* .antMatchers("/admin/**").hasRole("ADMIN") */
 				.anyRequest().authenticated() //
 				.and() //
 				.formLogin().loginPage("/login").permitAll() //

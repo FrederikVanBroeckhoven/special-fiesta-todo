@@ -8,27 +8,82 @@ var csrf = function() {
 	return header;
 }
 
+var merge = function(list, items) {
+	items.forEach(
+		function(item) {
+			if(list.findIndex(
+				function(present) {
+					return present.id == item.id;
+				}) > 0) {
+				return;
+			}
+			list.push(item);
+		}
+	);
+	return list;
+}
+
+var purge = function(list, id) {
+	idx = list.findIndex(
+		function(present) {
+			return present.id == id;
+		}
+	);
+	if(idx > 0) {
+		list.splice(idx, 1);
+	}
+	return list;
+}
+
+
 var root = 'http://localhost:8080';
+
+app.directive(
+	"scrollBottom",
+	function() {
+		return {
+			restrict: 'A',
+			link:
+				function(scope, elem, attrs) {
+					first = elem[0];
+					elem.bind(
+						"scroll",
+						function() {
+							if(first.scrollTop + first.offsetHeight + 5 >= first.scrollHeight) {
+								scope.$apply(attrs.scrollBottom);
+							}
+						}
+					);
+				}
+		}
+	}
+);
 
 app.controller('list', function($scope, $http) {
 	$scope.itemList = {
 			content: [],
 			next_page: 0
 	}
+	$scope.loading = false;
 	$scope.load = function() {
-		if($scope.itemList.next_page < 0) {
+		if($scope.loading) {
 			return;
 		}
+		$scope.loading = true;
+		var page = Math.floor($scope.itemList.content.length / 5);
 		$http
-			.get(root + '/get/all/' + $scope.itemList.next_page + '/5')
+			.get(root + '/get/all/' + page + '/5')
 			.success(
 				(response) => {
-					$scope.itemList.content = $scope.itemList.content.concat(response.content);
-					$scope.itemList.next_page =
-						response.last
-						? -1
-						: $scope.itemList.next_page + 1;
+					$scope.itemList.content =
+						merge($scope.itemList.content, response.content);
 				}
+			)
+			.finally(
+					() => {
+						// do not reload too fast
+						setTimeout(() => { $scope.loading = false; }, 1000);
+					}
 			);		
 	}
 	$scope.add = function() {
@@ -62,37 +117,26 @@ app.controller('list', function($scope, $http) {
 
 app.controller('item', function($scope, $http, $window, $q) {
 	$scope.editable = false;
+	$scope.toDelete = false;
 	$scope.setItem = { title: '', description: '' };
 	$scope.del = function() {
-		$q
-			.when($window.confirm('Are you sure ?'))
-			.then(
-				(confirm) => {
-					if(confirm) {
-						$http
-							.delete(
-								root + '/del/' + $scope.it.id,
-								{ headers: csrf() }
-							)
-							.success(
-								(response) => {
-									$http
-									.get(root + '/get/all/' + $scope.$parent.$parent.itemList.content.length + '/1')
-									.success(
-										function(response) {
-											// surely better done with scope-events,
-											// but this is faster/lighter :)
-											$scope.$parent.$parent.itemList.content.splice($scope.$parent.$index, 1);
-											if(response.content.length > 0) {
-												$scope.$parent.$parent.itemList.content.push(response.content[0]);
-											}
-										}
-									)
-								}
-							);
-					}
+		$scope.$parent.$parent.loading = true;
+		$http
+			.delete(
+				root + '/del/' + $scope.it.id,
+				{ headers: csrf() }
+			)
+			.success(
+				() => {
+					purge($scope.$parent.$parent.itemList.content, $scope.it.id);
 				}
-			);
+			)
+			.finally(
+					() => {
+						// do not reload too fast
+						setTimeout(() => { $scope.$parent.$parent.loading = false; }, 1000);
+					}
+			);		
 	};
 	$scope.set = function() {
 		$http
@@ -118,12 +162,25 @@ app.controller('item', function($scope, $http, $window, $q) {
 		$scope.setItem.description = $scope.it.description;
 		$scope.editable = true;
 	};
-	$scope.check = function() {
+	$scope.remove = function() {
+		$scope.toDelete = true;
+	};
+	$scope.cancel = function() {
+		$scope.toDelete = false;
+		$scope.editable = false;
+	};
+	$scope.check = function(ch) {
+		if(ch == undefined) {
+			ch = $scope.it.checked;
+		}
 		$http
 			.patch(
 				root + '/check/' + $scope.$parent.it.id,
-				$scope.it.checked,
+				ch,
 				{ headers: csrf() }
-			);
+			)
+			.success(
+				() => { $scope.it.checked = ch; }
+			)
 	};
 });

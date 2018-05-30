@@ -1,20 +1,41 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
-    <head>
-        <title>Spring Security Example </title>
-    </head>
-    <body>
-        <div th:if="${param.error}">
-            Invalid username and password.
-        </div>
-        <div th:if="${param.logout}">
-            You have been logged out.
-        </div>
-        <form th:action="@{/login}" method="post">
-            <div><label> User Name : <input type="text" name="username"/> </label></div>
-            <div><label> Password: <input type="password" name="password"/> </label></div>
-            <div><input type="submit" value="Sign In"/></div>
-        </form>
-    </body>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<link rel="stylesheet" th:href="@{css/theme.css}">
+</head>
+<body>
+	<div style="display: flex; justify-content: center;">
+		<div class="card bg-secondary mb-3"
+			style="width: 40rem; margin-top: 30px;">
+			<div class="card-header">Welcome!</div>
+			<div class="card-body">
+				<h4 class="card-title">Please, sign in first:</h4>
+				<form th:action="@{/login}" method="post">
+					<div class="modal-body">
+						<div class="form-group">
+							<label class="col-form-label" for="username">Username</label> <input
+								name="username" class="form-control" placeholder="Username"
+								id="username" type="text"> <label class="col-form-label"
+								for="password">Password</label> <input name="password"
+								class="form-control" placeholder="Password" id="password"
+								type="password">
+						</div>
+					</div>
+					<div th:if="${param.error}"
+						class="alert alert-dismissible alert-danger">
+						<button type="button" class="close" data-dismiss="alert">&times;</button>
+						<strong>Oh snap!</strong> Wrong username or password. <a href="#"
+							class="alert-link">Change a few things up</a> and try again.
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-primary">Sign in</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div th:if="${param.logout}">You have been logged out.</div>
+	</div>
+</body>
 </html>

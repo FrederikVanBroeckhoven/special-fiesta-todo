@@ -1,0 +1,105 @@
+@import url(//fonts.googleapis.com/css?family=Lato:300,400,700);
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
+#item-det {
+	min-height: 100px;
+	background-color: red;
+	flex-grow: 1;
+	flex-basis: 80%
+}
+
+#item-ctl {
+	min-height: 30px;
+	background-color: green;
+	flex-grow: 1;
+	flex-shrink: 0;
+	flex-basis: 150px
+}
+
+#add {
+/*	min-height: 30px;
+	background-color: grey;*/
+}
+
+.row {
+	display: flex;
+	justify-content: flex-start;
+	align-items: stretch;
+	flex-wrap: nowrap;
+}
+
+.cell {
+	min-height: 75px;
+	flex-grow: 1;
+	flex-basis: 100%;
+}
+
+.item {
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: left;
+	margin: 0 0 10px 0;
+	padding-top: 0px;
+	padding-right: 20px;
+	padding-bottom: 0px;
+	padding-left: 20px;
+	flex-wrap: wrap;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+#main {
+	position: fixed;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	left: 0px;
+	justify-content: center;
+	align-items: center;
+	border-top-color: rgb(119, 119, 119);
+	border-top-style: solid;
+	border-top-width: medium;
+	border-left-color: rgb(119, 119, 119);
+	border-left-style: solid;
+	border-left-width: medium;
+	border-bottom-color: rgb(119, 119, 119);
+	border-bottom-style: solid;
+	border-bottom-width: medium;
+	border-right-color: rgb(119, 119, 119);
+	border-right-style: solid;
+	border-right-width: medium;
+	border-image-outset: 0;
+	border-image-repeat: stretch;
+	border-image-slice: 100%;
+	border-image-source: none;
+	border-image-width: 1;
+}
+
+#list {
+	position: fixed;
+	width: 1000px;
+	max-width: 100%;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+#list {
+	position: fixed;
+	display: block;
+	float: none;
+	height: 90%;
+	flex-grow: 1;
+	flex-shrink: 0;
+	flex-basis: 0px;
+	align-self: center;
+	justify-content: space-between;
+}

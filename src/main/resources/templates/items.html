@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" ng-app="item">
+<head>
+<meta charset="utf-8">
+<meta name="csrf_token" th:content="${_csrf.token}" />
+<meta name="csrf_parameter" th:content="${_csrf.headerName}" />
+<link rel="stylesheet" th:href="@{css/items.css}">
+<link rel="stylesheet" th:href="@{css/theme.css}">
+<title>Demo items</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+<script th:src="@{js/item.js}"></script>
+</head>
+<body ng-controller="list">
+	<div id="main" class="row">
+		<div id="list" class="cell" scroll-bottom="load()">
+			<div class="row item">
+				<div class="card card text-white bg-info mb-3"
+					style="flex-direction: row; width: 100%; margin-bottom: 0px !important;">
+					<div class="card-body"
+						style="margin: -5px 0px; width: 130px; flex-grow: 0; flex-direction: column; justify-content: space-evenly; align-items: center; display: flex;">
+						<button ng-click="" type="button" class="btn  btn-info"
+							style="margin: 5px; flex-grow: 1;">
+							<img th:src="@{img/add_inv.png}"
+								style="width: 20px; height: 20px;">
+						</button>
+					</div>
+					<div class="card-body"
+						style="flex-direction: column; display: flex; justify-content: center;">
+						<h4 class="card-title" style="margin: 0px;">Click to add a
+							new item...</h4>
+					</div>
+				</div>
+			</div>
+			<div ng-repeat="it in itemList.content">
+				<div class="row item" ng-controller="item">
+					<div class="card mb-3"
+						ng-class="{'border-success bg-secondary': it.checked && !toDelete, 'border-danger alert-warning':toDelete }"
+						style="flex-direction: row; width: 100%; margin-bottom: 0px !important;">
+						<!-- 				  <div class="card-header">Header</div> -->
+						<div class="card-body"
+							style="margin: -5px 0px; width: 130px; flex-grow: 0; flex-direction: column; justify-content: space-evenly; align-items: center; display: flex;">
+							<button ng-disabled="toDelete" ng-hide="!it.checked"
+								ng-click="check(false)" type="button" class="btn  btn-success"
+								style="margin: 5px; flex-grow: 1;">
+								<img th:src="@{img/check-on_inv.png}"
+									style="width: 20px; height: 20px;">
+							</button>
+							<button ng-disabled="toDelete" ng-hide="it.checked"
+								ng-click="check(true)" type="button" class="btn btn-secondary"
+								style="margin: 5px; flex-grow: 1;">
+								<img th:src="@{img/check-off.png}"
+									style="width: 20px; height: 20px;">
+							</button>
+						</div>
+						<div class="card-body">
+							<h4 class="card-title">{{ it.title }}</h4>
+							<p ng-hide="toDelete" class="card-text">{{ it.description }}</p>
+							<p ng-hide="!toDelete" class="card-title">Do you really want
+								to delete this item?</p>
+							<div ng-hide="!toDelete"
+								style="display: flex; flex-direction: row; justify-content: space-evenly; align-items: center;">
+								<button ng-click="del()" type="button" class="btn btn-danger">
+									Yes</button>
+								<button ng-click="cancel()" type="button"
+									class="btn btn-secondary">No</button>
+							</div>
+						</div>
+						<div class="card-body"
+							style="margin: -5px 0px; width: 130px; flex-grow: 0; flex-direction: column; justify-content: space-evenly; align-items: center; display: flex;">
+							<button ng-disabled="toDelete" type="button"
+								class="btn btn-secondary" ng-click="remove()"
+								style="margin: 5px;">
+								<img th:src="@{img/delete.png}"
+									style="width: 20px; height: 20px;">
+							</button>
+							<button ng-disabled="toDelete" type="button"
+								class="btn btn-secondary" style="margin: 5px;">
+								<img th:src="@{img/edit.png}" style="width: 20px; height: 20px;">
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div ng-hide="loading" class="row item">
+				<div class="card bg-secondary mb-3"
+					style="width: 100%; margin-bottom: 0px !important;">
+					<div class="card-body">
+						<h4 class="card-title">Loading</h4>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<html>
