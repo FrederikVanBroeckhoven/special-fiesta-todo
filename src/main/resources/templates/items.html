@@ -15,78 +15,146 @@
 	<div id="main" class="row">
 		<div id="list" class="cell" scroll-bottom="load()">
 			<div class="row item">
-				<div class="card card text-white bg-info mb-3"
+				<button type="button" class="btn btn-info" ng-hide="in_insert()"
+					ng-click="insert()"
+					style="display: flex; flex-direction: row; justify-content: center; width: 100%;">
+					<img th:src="@{img/add_inv.png}" style="width: 20px; height: 20px;">
+					<h4 class="card-title" style="margin: 0 0 0 20px;">Click to
+						add a new item...</h4>
+				</button>
+				<div ng-hide="!in_insert()" class="card mb-3 border-info"
 					style="flex-direction: row; width: 100%; margin-bottom: 0px !important;">
 					<div class="card-body"
-						style="margin: -5px 0px; width: 130px; flex-grow: 0; flex-direction: column; justify-content: space-evenly; align-items: center; display: flex;">
-						<button ng-click="" type="button" class="btn  btn-info"
-							style="margin: 5px; flex-grow: 1;">
-							<img th:src="@{img/add_inv.png}"
-								style="width: 20px; height: 20px;">
-						</button>
+						style="flex-grow: 1; display: flex; flex-direction: column;">
+						<div
+							style="flex-grow: 0; display: flex; flex-direction: row; align-items: center;">
+							<div style="flex-grow: 0;">
+								<button ng-disabled="true" type="button"
+									class="btn btn-secondary">
+									<img th:src="@{img/check-off.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+							</div>
+							<div style="flex-grow: 1;">
+								<input placeholder="Title" class="form-control title-edit"
+									ng-model="newItem.title" style="margin: 0px;" type="text" />
+							</div>
+						</div>
+						<div style="flex-grow: 1;">
+							<div
+								style="flex-grow: 0; display: flex; flex-direction: row; align-items: center;">
+								<textarea rows="{{ description_rows() }}"
+									placeholder="Description" class="form-control"
+									ng-model="newItem.description"
+									style="margin-top: 10; padding-bottom: 0;"></textarea>
+							</div>
+						</div>
 					</div>
 					<div class="card-body"
-						style="flex-direction: column; display: flex; justify-content: center;">
-						<h4 class="card-title" style="margin: 0px;">Click to add a
-							new item...</h4>
+						style="display: flex; flex-grow: 0; flex-direction: column; justify-content: stretch;">
+						<div
+							style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start;">
+							<button ng-hide="" type="button" class="btn btn-warning"
+								ng-click="cancel()">
+								<img th:src="@{img/revert_inv.png}"
+									style="width: 20px; height: 20px;">
+							</button>
+							<button ng-hide="" type="button" class="btn btn-success"
+								ng-click="add()" style="margin-top: 24px;">
+								<img th:src="@{img/ok_inv.png}"
+									style="width: 20px; height: 20px;">
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 			<div ng-repeat="it in itemList.content">
 				<div class="row item" ng-controller="item">
 					<div class="card mb-3"
-						ng-class="{'border-success bg-secondary': it.checked && !toDelete, 'border-danger alert-warning':toDelete }"
+						ng-class="{'border-success bg-secondary': it.checked && idle(), 'border-danger alert-warning':in_remove(), 'border-warning':in_edit() }"
 						style="flex-direction: row; width: 100%; margin-bottom: 0px !important;">
-						<!-- 				  <div class="card-header">Header</div> -->
 						<div class="card-body"
-							style="margin: -5px 0px; width: 130px; flex-grow: 0; flex-direction: column; justify-content: space-evenly; align-items: center; display: flex;">
-							<button ng-disabled="toDelete" ng-hide="!it.checked"
-								ng-click="check(false)" type="button" class="btn  btn-success"
-								style="margin: 5px; flex-grow: 1;">
-								<img th:src="@{img/check-on_inv.png}"
-									style="width: 20px; height: 20px;">
-							</button>
-							<button ng-disabled="toDelete" ng-hide="it.checked"
-								ng-click="check(true)" type="button" class="btn btn-secondary"
-								style="margin: 5px; flex-grow: 1;">
-								<img th:src="@{img/check-off.png}"
-									style="width: 20px; height: 20px;">
-							</button>
-						</div>
-						<div class="card-body">
-							<h4 class="card-title">{{ it.title }}</h4>
-							<p ng-hide="toDelete" class="card-text">{{ it.description }}</p>
-							<p ng-hide="!toDelete" class="card-title">Do you really want
-								to delete this item?</p>
-							<div ng-hide="!toDelete"
-								style="display: flex; flex-direction: row; justify-content: space-evenly; align-items: center;">
-								<button ng-click="del()" type="button" class="btn btn-danger">
-									Yes</button>
-								<button ng-click="cancel()" type="button"
-									class="btn btn-secondary">No</button>
+							style="flex-grow: 1; display: flex; flex-direction: column;">
+							<div
+								style="flex-grow: 0; display: flex; flex-direction: row; align-items: center;">
+								<div style="flex-grow: 0;">
+									<button ng-disabled="in_remove()" ng-hide="!it.checked"
+										ng-click="check(false)" type="button" class="btn  btn-success">
+										<img th:src="@{img/check-on_inv.png}"
+											style="width: 20px; height: 20px;">
+									</button>
+									<button ng-disabled="in_remove()" ng-hide="it.checked"
+										ng-click="check(true)" type="button" class="btn btn-secondary">
+										<img th:src="@{img/check-off.png}"
+											style="width: 20px; height: 20px;">
+									</button>
+								</div>
+								<div ng-hide="in_edit()" style="flex-grow: 0; margin-left: 2rem">
+									<!-- for some reason, editable and non-editable inputs have different left paddings -->
+								</div>
+								<div style="flex-grow: 1;">
+									<input
+										ng-class="{'form-control': in_edit(), 'form-control-plaintext': !in_edit() }"
+										ng-readonly="!in_edit()" class="title-edit"
+										style="margin: 0px;" type="text" ng-model="it.title" />
+								</div>
+							</div>
+							<div style="flex-grow: 1;">
+								<div
+									style="flex-grow: 0; display: flex; flex-direction: row; align-items: center;">
+									<div ng-hide="in_edit()"
+										style="flex-grow: 0; margin-left: 2rem">
+										<!-- for some reason, editable and non-editable inputs have different left paddings -->
+									</div>
+									<textarea rows="{{ description_rows() }}"
+										ng-readonly="!in_edit()"
+										ng-class="{'form-control': in_edit(), 'form-control-plaintext': !in_edit() }"
+										ng-model="it.description"
+										style="margin-top: 10; padding-bottom: 0;"></textarea>
+								</div>
 							</div>
 						</div>
 						<div class="card-body"
-							style="margin: -5px 0px; width: 130px; flex-grow: 0; flex-direction: column; justify-content: space-evenly; align-items: center; display: flex;">
-							<button ng-disabled="toDelete" type="button"
-								class="btn btn-secondary" ng-click="remove()"
-								style="margin: 5px;">
-								<img th:src="@{img/delete.png}"
-									style="width: 20px; height: 20px;">
-							</button>
-							<button ng-disabled="toDelete" type="button"
-								class="btn btn-secondary" style="margin: 5px;">
-								<img th:src="@{img/edit.png}" style="width: 20px; height: 20px;">
-							</button>
+							style="display: flex; flex-grow: 0; flex-direction: column; justify-content: stretch;">
+							<div
+								style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start;">
+								<button ng-hide="!idle()" type="button"
+									class="btn btn-secondary" ng-click="edit()">
+									<img th:src="@{img/edit.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+								<button ng-hide="!in_edit()" type="button"
+									class="btn btn-warning" ng-click="cancel()">
+									<img th:src="@{img/revert_inv.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+								<button ng-hide="!in_edit()" type="button"
+									class="btn btn-success" ng-click="set()"
+									style="margin-top: 24px;">
+									<img th:src="@{img/ok_inv.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+							</div>
+							<div
+								style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+								<button ng-hide="!idle()" type="button"
+									class="btn btn-secondary" ng-click="remove()">
+									<img th:src="@{img/delete.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+								<button ng-hide="!in_remove()" type="button"
+									class="btn btn-danger" ng-click="del()">
+									<img th:src="@{img/ok_inv.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+								<button ng-hide="!in_remove()" type="button"
+									class="btn btn-warning" ng-click="cancel()"
+									style="margin-top: 24px;">
+									<img th:src="@{img/revert_inv.png}"
+										style="width: 20px; height: 20px;">
+								</button>
+							</div>
 						</div>
-					</div>
-				</div>
-			</div>
-			<div ng-hide="loading" class="row item">
-				<div class="card bg-secondary mb-3"
-					style="width: 100%; margin-bottom: 0px !important;">
-					<div class="card-body">
-						<h4 class="card-title">Loading</h4>
 					</div>
 				</div>
 			</div>

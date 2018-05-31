@@ -4,8 +4,22 @@
 	box-sizing: border-box;
 }
 
+textarea, input, button { outline: none; }
+
 body {
 	margin: 0;
+}
+
+input.title-edit {
+	width:100%;
+	text-transform: uppercase;
+	letter-spacing: 3px;
+	font-size: 1.25rem;
+	margin-bottom: 0.5rem;
+	font-family: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	margin-top: 0;
 }
 
 #item-det {
@@ -24,8 +38,9 @@ body {
 }
 
 #add {
-/*	min-height: 30px;
+	/*	min-height: 30px;
 	background-color: grey;*/
+	
 }
 
 .row {
@@ -86,7 +101,7 @@ body {
 
 #list {
 	position: fixed;
-	width: 1000px;
+	width: 700px;
 	max-width: 100%;
 	overflow-y: scroll;
 	overflow-x: hidden;

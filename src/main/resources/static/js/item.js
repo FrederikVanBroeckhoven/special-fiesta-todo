@@ -9,17 +9,15 @@ var csrf = function() {
 }
 
 var merge = function(list, items) {
-	items.forEach(
-		function(item) {
-			if(list.findIndex(
-				function(present) {
-					return present.id == item.id;
-				}) > 0) {
-				return;
-			}
-			list.push(item);
+	for(i in items) {
+		if(list.findIndex(
+			function(present) {
+				return present.id == items[i].id;
+			}) >= 0) {
+			break;
 		}
-	);
+		list.push(items[i]);
+	}
 	return list;
 }
 
@@ -29,7 +27,7 @@ var purge = function(list, id) {
 			return present.id == id;
 		}
 	);
-	if(idx > 0) {
+	if(idx >= 0) {
 		list.splice(idx, 1);
 	}
 	return list;
@@ -64,7 +62,26 @@ app.controller('list', function($scope, $http) {
 			content: [],
 			next_page: 0
 	}
+	$scope.newItem = { title: '', description: '' };
+	$scope.inserting = false;
 	$scope.loading = false;
+
+	$scope.cancel = function() {
+		$scope.newItem.title = '';
+		$scope.newItem.description = '';
+		$scope.inserting = false;
+	}
+	$scope.insert = function() {
+		$scope.inserting = true;
+	}
+	$scope.in_insert = function() {
+		return $scope.inserting && !$scope.loading;
+	}
+
+	$scope.description_rows = function() {
+		return ($scope.newItem.description.match(/\r\n|\r|\n/g) || [0]).length + 1;
+	}
+
 	$scope.load = function() {
 		if($scope.loading) {
 			return;
@@ -81,8 +98,7 @@ app.controller('list', function($scope, $http) {
 			)
 			.finally(
 					() => {
-						// do not reload too fast
-						setTimeout(() => { $scope.loading = false; }, 1000);
+						$scope.loading = false;
 					}
 			);		
 	}
@@ -99,7 +115,6 @@ app.controller('list', function($scope, $http) {
 						.get(root + headers('Location'))
 						.success(
 							function(response) {
-								 $scope.itemList.content.pop();
 								 $scope.itemList.content.unshift(response);
 							}
 						)
@@ -107,8 +122,8 @@ app.controller('list', function($scope, $http) {
 			)
 			.finally(
 				() => {
-					$scope.newItem.title = '';
-					$scope.newItem.description = '';					
+					// reset insert procedure
+					$scope.cancel();
 				}
 			);
 	};
@@ -118,9 +133,23 @@ app.controller('list', function($scope, $http) {
 app.controller('item', function($scope, $http, $window, $q) {
 	$scope.editable = false;
 	$scope.toDelete = false;
-	$scope.setItem = { title: '', description: '' };
+	$scope.itemCopy = { title: $scope.it.title, description: $scope.it.description };
+
+	$scope.in_edit = function() {
+		return $scope.editable && !$scope.toDelete;
+	}
+	$scope.in_remove = function() {
+		return !$scope.editable && $scope.toDelete;
+	}
+	$scope.idle = function() {
+		return !$scope.editable && !$scope.toDelete;
+	}
+
+	$scope.description_rows = function() {
+		return ($scope.it.description.match(/\r\n|\r|\n/g) || [0]).length + 1;
+	}
+	
 	$scope.del = function() {
-		$scope.$parent.$parent.loading = true;
 		$http
 			.delete(
 				root + '/del/' + $scope.it.id,
@@ -130,12 +159,6 @@ app.controller('item', function($scope, $http, $window, $q) {
 				() => {
 					purge($scope.$parent.$parent.itemList.content, $scope.it.id);
 				}
-			)
-			.finally(
-					() => {
-						// do not reload too fast
-						setTimeout(() => { $scope.$parent.$parent.loading = false; }, 1000);
-					}
 			);		
 	};
 	$scope.set = function() {
@@ -144,22 +167,19 @@ app.controller('item', function($scope, $http, $window, $q) {
 				root + '/set/',
 				{
 					id: $scope.$parent.it.id,
-					title: $scope.setItem.title,
-					description: $scope.setItem.description					
+					title: $scope.it.title,
+					description: $scope.it.description					
 				},
 				{ headers: csrf() }
 			)
 			.finally(
 				() => {
-					$scope.it.title = $scope.setItem.title;
-					$scope.it.description = $scope.setItem.description;
+					$scope.itemCopy = { title: $scope.it.title, description: $scope.it.description };
 					$scope.editable = false;
 				}
 			);
 	};
 	$scope.edit = function() {
-		$scope.setItem.title = $scope.it.title;
-		$scope.setItem.description = $scope.it.description;
 		$scope.editable = true;
 	};
 	$scope.remove = function() {
@@ -168,6 +188,8 @@ app.controller('item', function($scope, $http, $window, $q) {
 	$scope.cancel = function() {
 		$scope.toDelete = false;
 		$scope.editable = false;
+		$scope.it.title = $scope.itemCopy.title;
+		$scope.it.description = $scope.itemCopy.description;
 	};
 	$scope.check = function(ch) {
 		if(ch == undefined) {
